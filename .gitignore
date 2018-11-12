@@ -1,0 +1,14 @@
+# Created by .ignore support plugin (hsz.mobi)
+### Ansible template
+*.retry
+### Terraform template
+#  Local .terraform directories
+**/.terraform/*
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+
+# .tfvars files
+*.tfvars
+

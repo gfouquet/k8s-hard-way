@@ -1,10 +1,12 @@
 provider "google" {
   credentials = "${file("~/.gcloud/k8s-hard-way.json")}"
   project = "k8s-hard-way-222321"
-  region = "europe-west1"
-  zone = "europe-west1-b"
+  region = "${var.region}"
+  zone = "${var.zone}"
 }
 
+# NETWORKING
+# ==========
 # Virtual Private Cloud Network
 # -----------------------------
 resource "google_compute_network" "k8s-hard-way-net" {
@@ -14,7 +16,7 @@ resource "google_compute_network" "k8s-hard-way-net" {
 
 resource "google_compute_subnetwork" "kube-subnet" {
   name = "kube-subnet"
-  region = "europe-west1"
+  region = "${var.region}"
   network = "${google_compute_network.k8s-hard-way-net.name}"
   ip_cidr_range = "10.240.0.0/24"
 }
@@ -51,4 +53,12 @@ resource "google_compute_firewall" "kube-fw-allow-external" {
     protocol = "icmp"
   }
   source_ranges = ["0.0.0.0/0"]
+}
+
+# K8s public IP
+resource "google_compute_address" "kube-public-ip" {
+  name = "kube-public-ip"
+  region = "${var.region}"
+}
+
 }

@@ -61,4 +61,37 @@ resource "google_compute_address" "kube-public-ip" {
   region = "${var.region}"
 }
 
+# COMPUTE
+# =======
+# K8s contollers
+# --------------
+resource "google_compute_instance" "kube-master" {
+  count = 3
+  name = "kube-master-${count.index}"
+  machine_type = "n1-standard-1"
+  can_ip_forward = true
+  tags = ["k8s-hard-way", "kube-master"]
+
+  boot_disk {
+    initialize_params {
+      size = 200
+      image = "ubuntu-os-cloud/ubuntu-1804-lts"
+    }
+  }
+
+  network_interface {
+    network_ip = "10.240.0.1${count.index}"
+    subnetwork = "${google_compute_subnetwork.kube-subnet.name}"
+  }
+
+  service_account {
+    scopes = [
+      "compute-rw",
+      "storage-ro",
+      "service-management",
+      "service-control",
+      "logging-write",
+      "monitoring"
+    ]
+  }
 }

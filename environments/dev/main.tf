@@ -94,6 +94,10 @@ resource "google_compute_instance" "kube-master" {
       "monitoring"
     ]
   }
+
+  metadata {
+    sshKeys = "${var.ssh_user}:${file(var.ssh_public_key)}"
+  }
 }
 
 # K8s workers
@@ -130,5 +134,6 @@ resource "google_compute_instance" "kube-worker" {
 
   metadata {
     pod-cidr = "10.200.${count.index}.0/24"
+    sshKeys = "${var.ssh_user}:${file(var.ssh_public_key)}"
   }
 }

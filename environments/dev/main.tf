@@ -82,6 +82,11 @@ resource "google_compute_instance" "kube-master" {
   network_interface {
     network_ip = "10.240.0.1${count.index}"
     subnetwork = "${google_compute_subnetwork.kube-subnet.name}"
+
+
+    access_config {
+      # creates ephemeral external ip
+    }
   }
 
   service_account {
@@ -119,6 +124,10 @@ resource "google_compute_instance" "kube-worker" {
   network_interface {
     network_ip = "10.240.0.2${count.index}"
     subnetwork = "${google_compute_subnetwork.kube-subnet.name}"
+
+    access_config {
+      # creates ephemeral external ip
+    }
   }
 
   service_account {

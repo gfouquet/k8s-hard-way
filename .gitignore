@@ -12,3 +12,6 @@
 # .tfvars files
 *.tfvars
 
+
+.idea
+

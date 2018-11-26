@@ -19,3 +19,17 @@
   args:
     chdir: "{{ tmp_path.path }}"
 
+- copy:
+    src: "{{ item }}"
+    dest: "{{ tmp_path.path }}/{{ item }}"
+  loop:
+    - admin-csr.json
+
+- shell: "cfssl gencert \
+            -ca=ca.pem \
+            -ca-key=ca-key.pem \
+            -config=ca-config.json \
+            -profile=kubernetes \
+            admin-csr.json | cfssljson -bare admin"
+  args:
+    chdir: "{{ tmp_path.path }}"

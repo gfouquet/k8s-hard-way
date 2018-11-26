@@ -18,3 +18,8 @@
           name: cfssljson
         - url: "https://storage.googleapis.com/kubernetes-release/release/v{{ kubectl_version }}/bin/linux/amd64/kubectl"
           name: kubectl
+      tags:
+        - local-install
+
+    - include_role:
+        name: local

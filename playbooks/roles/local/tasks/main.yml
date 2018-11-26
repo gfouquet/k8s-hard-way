@@ -1,0 +1,21 @@
+---
+- tempfile:
+    state: directory
+    prefix: ansible-tmp
+  register: tmp_path
+
+- debug:
+    msg: "{{ tmp_path.path }}"
+
+
+- copy:
+    src: "{{ item }}"
+    dest: "{{ tmp_path.path }}/{{ item }}"
+  loop:
+    - ca-config.json
+    - ca-csr.json
+
+- shell: "cfssl gencert -initca ca-csr.json | cfssljson -bare ca"
+  args:
+    chdir: "{{ tmp_path.path }}"
+

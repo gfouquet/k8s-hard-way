@@ -3,9 +3,13 @@
     state: directory
     prefix: ansible-tmp
   register: tmp_path
+  tags:
+    - worker-cert
 
 - debug:
-    msg: "{{ tmp_path.path }}"
+    msg: "Temp folder : {{ tmp_path.path }}"
+  tags:
+    - worker-cert
 
 
 - copy:
@@ -14,14 +18,18 @@
   loop:
     - ca-config.json
     - ca-csr.json
+  tags:
+    - worker-cert
 
 - shell: "cfssl gencert -initca ca-csr.json | cfssljson -bare ca"
   args:
     chdir: "{{ tmp_path.path }}"
+  tags:
+    - worker-cert
 
 - copy:
-    src: "{{ item }}"
-    dest: "{{ tmp_path.path }}/{{ item }}"
+    src: admin-csr.json
+    dest: "{{ tmp_path.path }}/admin-csr.json"
   loop:
     - admin-csr.json
 
@@ -33,3 +41,37 @@
             admin-csr.json | cfssljson -bare admin"
   args:
     chdir: "{{ tmp_path.path }}"
+
+- copy:
+    src: worker-csr.json
+    dest: "{{ tmp_path.path }}/{{ hostvars[item].name }}-csr.json"
+  loop: "{{ groups.workers }}"
+  tags:
+    - worker-cert
+
+- debug:
+    msg: "wn : {{ worker_name }}"
+  vars:
+    worker_name: "{{ hostvars[item]  }}"
+#    worker_public_ip: "{{ hostvars[item].ansible_host }}"
+#    worker_internal_ip: "{{ hostvars[item].internal_ip }}"
+  loop: "{{ groups.workers }}"
+  tags:
+    - worker-cert
+
+- shell: "cfssl gencert \
+    -ca=ca.pem \
+    -ca-key=ca-key.pem \
+    -config=ca-config.json \
+    -hostname={{ worker_name }},{{ worker_public_ip  }},{{ worker_internal_ip }} \
+    -profile=kubernetes \
+    {{ worker_name }}-csr.json | cfssljson -bare {{ worker_name }}"
+  args:
+    chdir: "{{ tmp_path.path }}"
+  vars:
+    worker_name: "{{ hostvars[item].name  }}"
+    worker_public_ip: "{{ hostvars[item].ansible_host }}"
+    worker_internal_ip: "{{ hostvars[item].internal_ip }}"
+  loop: "{{ hostvars.localhost.groups.workers }}"
+  tags:
+    - worker-cert

@@ -30,8 +30,6 @@
 - copy:
     src: admin-csr.json
     dest: "{{ tmp_path.path }}/admin-csr.json"
-  loop:
-    - admin-csr.json
 
 - shell: "cfssl gencert \
             -ca=ca.pem \
@@ -75,3 +73,18 @@
   loop: "{{ hostvars.localhost.groups.workers }}"
   tags:
     - worker-cert
+
+- copy:
+    src: kube-controller-manager-csr.json
+    dest: "{{ tmp_path.path }}/kube-controller-manager-csr.json"
+
+- shell: "cfssl gencert \
+    -ca=ca.pem \
+    -ca-key=ca-key.pem \
+    -config=ca-config.json \
+    -profile=kubernetes \
+    kube-controller-manager-csr.json | cfssljson -bare kube-controller-manager"
+  args:
+    chdir: "{{ tmp_path.path }}"
+
+# The Kube Proxy Client Certificate

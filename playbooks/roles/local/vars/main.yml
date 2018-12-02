@@ -1,5 +1,6 @@
 ---
-single_certs:
+client_certs:
   - admin
   - kube-controller-manager
   - kube-proxy
+  - kube-scheduler

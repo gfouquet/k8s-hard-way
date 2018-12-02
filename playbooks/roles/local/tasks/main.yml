@@ -6,14 +6,14 @@
   tags:
     - ca-cert
     - worker-cert
-    - single-certs
+    - client-certs
 
 - debug:
     msg: "Temp folder : {{ tmp_path.path }}"
   tags:
     - ca-cert
     - worker-cert
-    - single-certs
+    - client-certs
 
 - copy:
     src: "{{ item }}"
@@ -24,7 +24,7 @@
   tags:
     - ca-cert
     - worker-cert
-    - single-certs
+    - client-certs
 
 - shell: "cfssl gencert -initca ca-csr.json | cfssljson -bare ca"
   args:
@@ -32,7 +32,7 @@
   tags:
     - ca-cert
     - worker-cert
-    - single-certs
+    - client-certs
 
 - copy:
     src: "{{ csr_file }}"
@@ -40,9 +40,9 @@
   vars:
     csr_file: "{{ item }}-csr.json"
   loop:
-    "{{ single_certs }}"
+    "{{ client_certs }}"
   tags:
-    - single-certs
+    - client-certs
 
 - shell: "cfssl gencert \
             -ca=ca.pem \
@@ -53,9 +53,9 @@
   args:
     chdir: "{{ tmp_path.path }}"
   loop:
-    "{{ single_certs }}"
+    "{{ client_certs }}"
   tags:
-    - single-certs
+    - client-certs
 
 - template:
     src: worker-csr.json

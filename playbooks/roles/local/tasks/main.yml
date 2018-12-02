@@ -17,6 +17,8 @@
     - client-certs
     - api-server-cert
 
+# Create CA certificates
+# ---------------------
 - copy:
     src: "{{ item }}"
     dest: "{{ tmp_path.path }}/{{ item }}"
@@ -38,6 +40,8 @@
     - client-certs
     - api-server-cert
 
+# Create client certificates
+# --------------------------
 - copy:
     src: "{{ csr_file }}"
     dest: "{{ tmp_path.path }}/{{ csr_file }}"
@@ -61,6 +65,8 @@
   tags:
     - client-certs
 
+# Create workers certificates
+# ---------------------------
 - template:
     src: worker-csr.json
     dest: "{{ tmp_path.path }}/{{ hostvars[item].name }}-csr.json"
@@ -97,6 +103,8 @@
   tags:
     - worker-cert
 
+# Create API server certificate
+# -----------------------------
 - copy:
     src: "{{ csr_file }}"
     dest: "{{ tmp_path.path }}/{{ csr_file }}"

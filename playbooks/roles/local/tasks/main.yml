@@ -7,6 +7,7 @@
     - ca-cert
     - worker-cert
     - client-certs
+    - api-server-cert
 
 - debug:
     msg: "Temp folder : {{ tmp_path.path }}"
@@ -14,6 +15,7 @@
     - ca-cert
     - worker-cert
     - client-certs
+    - api-server-cert
 
 - copy:
     src: "{{ item }}"
@@ -25,6 +27,7 @@
     - ca-cert
     - worker-cert
     - client-certs
+    - api-server-cert
 
 - shell: "cfssl gencert -initca ca-csr.json | cfssljson -bare ca"
   args:
@@ -33,6 +36,7 @@
     - ca-cert
     - worker-cert
     - client-certs
+    - api-server-cert
 
 - copy:
     src: "{{ csr_file }}"
@@ -93,5 +97,24 @@
   tags:
     - worker-cert
 
+- copy:
+    src: "{{ csr_file }}"
+    dest: "{{ tmp_path.path }}/{{ csr_file }}"
+  vars:
+    csr_file: kubernetes-csr.json
+  tags:
+    - api-server-cert
 
-# The Kube Proxy Client Certificate
+# Note : 10.32.0.1 is internal VIP of K8s API. see https://github.com/kelseyhightower/kubernetes-the-hard-way/issues/105
+# TODO parameterize master IPs
+- shell: "cfssl gencert \
+            -ca=ca.pem \
+            -ca-key=ca-key.pem \
+            -config=ca-config.json \
+            -hostname=10.32.0.1,10.240.0.10,10.240.0.11,10.240.0.12,{{ kube_public_ip }},127.0.0.1,kubernetes.default \
+            -profile=kubernetes \
+            kubernetes-csr.json | cfssljson -bare kubernetes"
+  args:
+    chdir: "{{ tmp_path.path }}"
+  tags:
+    - api-server-cert

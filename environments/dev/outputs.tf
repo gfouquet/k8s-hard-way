@@ -12,3 +12,6 @@ output "kube_workers" {
     private_ips = ["${google_compute_instance.kube-worker.*.network_interface.0.network_ip}"]
   }
 }
+output "kube_public_ip" {
+  value = "${google_compute_address.kube-public-ip.address}"
+}

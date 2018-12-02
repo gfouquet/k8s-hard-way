@@ -1,0 +1,4 @@
+---
+single_certs:
+  - admin
+  - kube-controller-manager

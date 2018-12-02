@@ -4,13 +4,16 @@
     prefix: ansible-tmp
   register: tmp_path
   tags:
+    - ca-cert
     - worker-cert
+    - single-certs
 
 - debug:
     msg: "Temp folder : {{ tmp_path.path }}"
   tags:
+    - ca-cert
     - worker-cert
-
+    - single-certs
 
 - copy:
     src: "{{ item }}"
@@ -19,26 +22,40 @@
     - ca-config.json
     - ca-csr.json
   tags:
+    - ca-cert
     - worker-cert
+    - single-certs
 
 - shell: "cfssl gencert -initca ca-csr.json | cfssljson -bare ca"
   args:
     chdir: "{{ tmp_path.path }}"
   tags:
+    - ca-cert
     - worker-cert
+    - single-certs
 
 - copy:
-    src: admin-csr.json
-    dest: "{{ tmp_path.path }}/admin-csr.json"
+    src: "{{ csr_file }}"
+    dest: "{{ tmp_path.path }}/{{ csr_file }}"
+  vars:
+    csr_file: "{{ item }}-csr.json"
+  loop:
+    "{{ single_certs }}"
+  tags:
+    - single-certs
 
 - shell: "cfssl gencert \
             -ca=ca.pem \
             -ca-key=ca-key.pem \
             -config=ca-config.json \
             -profile=kubernetes \
-            admin-csr.json | cfssljson -bare admin"
+            {{ item }}-csr.json | cfssljson -bare {{ item }}"
   args:
     chdir: "{{ tmp_path.path }}"
+  loop:
+    "{{ single_certs }}"
+  tags:
+    - single-certs
 
 - copy:
     src: worker-csr.json
@@ -74,17 +91,5 @@
   tags:
     - worker-cert
 
-- copy:
-    src: kube-controller-manager-csr.json
-    dest: "{{ tmp_path.path }}/kube-controller-manager-csr.json"
-
-- shell: "cfssl gencert \
-    -ca=ca.pem \
-    -ca-key=ca-key.pem \
-    -config=ca-config.json \
-    -profile=kubernetes \
-    kube-controller-manager-csr.json | cfssljson -bare kube-controller-manager"
-  args:
-    chdir: "{{ tmp_path.path }}"
 
 # The Kube Proxy Client Certificate

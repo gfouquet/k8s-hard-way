@@ -57,9 +57,11 @@
   tags:
     - single-certs
 
-- copy:
+- template:
     src: worker-csr.json
     dest: "{{ tmp_path.path }}/{{ hostvars[item].name }}-csr.json"
+  vars:
+    worker_name: "{{ hostvars[item].name  }}"
   loop: "{{ groups.workers }}"
   tags:
     - worker-cert

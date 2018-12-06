@@ -4,11 +4,15 @@ all:
 
   children:
     masters:
+      vars:
+        ansible_python_interpreter: /usr/bin/python3
+        ansible_user: kube
       hosts:
         kube_master_0:
           ansible_host: 146.148.125.211
 
           internal_ip: 10.240.0.10
+          # TODO not so good a variable name
           name: kube-master-0
 
         kube_master_1:
@@ -24,6 +28,9 @@ all:
           name: kube-master-2
 
     workers:
+      vars:
+        ansible_python_interpreter: /usr/bin/python3
+        ansible_user: kube
       hosts:
         kube_worker_0:
           ansible_host: 35.205.105.37

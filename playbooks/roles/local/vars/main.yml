@@ -4,3 +4,4 @@ client_certs:
   - kube-controller-manager
   - kube-proxy
   - kube-scheduler
+  - service-account

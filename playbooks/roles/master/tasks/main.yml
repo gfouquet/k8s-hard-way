@@ -1,0 +1,11 @@
+---
+- copy:
+    src: "{{ certs_path }}/{{ item }}.pem"
+    dest: "~{{ ansible_user }}/"
+  loop:
+    - ca
+    - ca-key
+    - kubernetes
+    - kubernetes-key
+    - service-account
+    - service-account-key

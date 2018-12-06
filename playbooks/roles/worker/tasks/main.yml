@@ -1,0 +1,12 @@
+---
+- copy:
+    src: "{{ certs_path }}/ca.pem"
+    dest: "~{{ ansible_user }}/"
+
+- copy:
+    src: "{{ certs_path }}/{{ name }}.pem"
+    dest: "~{{ ansible_user }}/"
+
+- copy:
+    src: "{{ certs_path }}/{{ name }}-key.pem"
+    dest: "~{{ ansible_user }}/"

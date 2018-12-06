@@ -126,3 +126,8 @@
     chdir: "{{ tmp_path.path }}"
   tags:
     - api-server-cert
+
+# Hackish - this fact will be used by other roles
+- set_fact:
+    certs_path: "{{ tmp_path.path }}"
+

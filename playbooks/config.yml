@@ -29,11 +29,11 @@
     - import_role:
         name: worker
       vars:
-        certs_path: "{{ hostvars.localhost.certs_path }}"
+        work_dir: "{{ hostvars.localhost.work_dir }}"
 
 - hosts: masters
   tasks:
     - import_role:
         name: master
       vars:
-        certs_path: "{{ hostvars.localhost.certs_path }}"
+        work_dir: "{{ hostvars.localhost.work_dir }}"

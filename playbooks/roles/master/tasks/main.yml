@@ -1,6 +1,7 @@
 ---
-- copy:
-    src: "{{ certs_path }}/{{ item }}.pem"
+- name: Copy certificates
+  copy:
+    src: "{{ work_dir }}/{{ item }}.pem"
     dest: "~{{ ansible_user }}/"
   loop:
     - ca
@@ -9,3 +10,12 @@
     - kubernetes-key
     - service-account
     - service-account-key
+
+- name: Copy kube config files
+  copy:
+    src: "{{ work_dir }}/{{ item }}.kubeconfig"
+    dest: "~{{ ansible_user }}/"
+  loop:
+    - admin
+    - kube-controller-manager
+    - kube-scheduler

@@ -1,12 +1,25 @@
 ---
-- copy:
-    src: "{{ certs_path }}/ca.pem"
+- name: Copy CA cert
+  copy:
+    src: "{{ work_dir }}/ca.pem"
     dest: "~{{ ansible_user }}/"
 
-- copy:
-    src: "{{ certs_path }}/{{ name }}.pem"
+- name: Copy node cert
+  copy:
+    src: "{{ work_dir }}/{{ name }}.pem"
     dest: "~{{ ansible_user }}/"
 
-- copy:
-    src: "{{ certs_path }}/{{ name }}-key.pem"
+- name: Copy node key
+  copy:
+    src: "{{ work_dir }}/{{ name }}-key.pem"
+    dest: "~{{ ansible_user }}/"
+
+- name: Copy node kube config
+  copy:
+    src: "{{ work_dir }}/{{ name }}.kubeconfig"
+    dest: "~{{ ansible_user }}/"
+
+- name: Copy kube-proxy kube config
+  copy:
+    src: "{{ work_dir }}/kube-proxy.kubeconfig"
     dest: "~{{ ansible_user }}/"

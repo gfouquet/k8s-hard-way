@@ -19,3 +19,10 @@
     - admin
     - kube-controller-manager
     - kube-scheduler
+
+- name: Copy encryption config
+  template:
+    src: encryption-config.yaml
+    dest: "~{{ ansible_user }}/"
+  vars:
+    encryption_key: "{{ hostvars.localhost.encryption_key }}"

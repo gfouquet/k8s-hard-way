@@ -21,6 +21,11 @@
       tags:
         - local-install
 
+    - apt:
+        name: coreutils
+        state: present
+      become: yes
+
     - import_role:
         name: local
 

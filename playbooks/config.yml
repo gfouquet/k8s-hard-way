@@ -37,6 +37,8 @@
         work_dir: "{{ hostvars.localhost.work_dir }}"
 
 - hosts: masters
+  vars:
+    etcd_version: "3.3.9"
   tasks:
     - import_role:
         name: master

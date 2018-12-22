@@ -26,3 +26,58 @@
     dest: "~{{ ansible_user }}/"
   vars:
     encryption_key: "{{ hostvars.localhost.encryption_key }}"
+
+- file:
+    path: /tmp/etcd
+    state: directory
+
+- name: Fetch etcd package
+  unarchive:
+    src: "https://github.com/coreos/etcd/releases/download/v{{ etcd_version }}/etcd-v{{ etcd_version }}-linux-amd64.tar.gz"
+    remote_src: yes
+    dest: /tmp/etcd/
+
+- name: Install etcd*
+  copy:
+    src: "/tmp/etcd/etcd-v{{ etcd_version }}-linux-amd64/{{ item }}"
+    remote_src: yes
+    dest: /usr/local/bin/
+    mode: 755
+    owner: root
+  become: yes
+  loop:
+    - etcd
+    - etcdctl
+
+#- file:
+#    path: "{{ item }}"
+#    state: directory
+#  become: yes
+#  loop:
+#    - /etc/etcd
+#    - /var/lib/etcd
+
+- name: Copy etcd certificates
+  copy:
+    src: "{{ work_dir }}/{{ item }}.pem"
+    dest: "/etc/etcd/"
+  become: yes
+  loop:
+    - ca
+    - kubernetes
+    - kubernetes-key
+
+- name: Install etcd unit file
+  template:
+    src: etcd.service
+    dest: /etc/systemd/system/
+  become: yes
+
+- name: Enable etcd service
+  systemd:
+    name: etcd
+    state: started
+    enabled: yes
+    daemon_reload: yes
+  become: yes
+

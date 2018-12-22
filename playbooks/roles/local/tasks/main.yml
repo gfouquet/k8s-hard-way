@@ -99,7 +99,8 @@
     worker_name: "{{ hostvars[item].name  }}"
     worker_public_ip: "{{ hostvars[item].ansible_host }}"
     worker_internal_ip: "{{ hostvars[item].internal_ip }}"
-  loop: "{{ hostvars.localhost.groups.workers }}"
+  loop: "{{ groups.workers }}"
+#  loop: "{{ hostvars.localhost.groups.workers }}"
   tags:
     - worker-cert
 
@@ -136,8 +137,10 @@
   tags:
     - kube-config
 
+# TODO run directly on workers when kubectl is installed
 - shell: "./create-worker-config.sh {{ hostvars[item].name }}"
-  loop: "{{ hostvars.localhost.groups.workers }}"
+  loop: "{{ groups.workers }}"
+#  loop: "{{ hostvars.localhost.groups.workers }}"
   args:
     chdir: "{{ tmp_path.path }}"
   tags:
@@ -155,6 +158,8 @@
   tags:
     - kube-config
 
+# TODO run directly on workers / masters when kubectl is installed
+# ^^^ Nope - (some) certs which are embedded in config not available on nodes
 - shell: "./create-{{ item }}-config.sh"
   args:
     chdir: "{{ tmp_path.path }}"

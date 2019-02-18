@@ -1,0 +1,29 @@
+all:
+  vars:
+    kube_public_ip: {{ kube_public_ip }}
+
+  children:
+    masters:
+      vars:
+        ansible_python_interpreter: /usr/bin/python3
+        ansible_user: kube
+      hosts:
+        {% for node in kube_masters %}
+        {{ node.name_underscore }}:
+          ansible_host: {{ node.public_ip }}
+          internal_ip: {{ node.private_ip }}
+          # TODO not so good a variable name
+          name: {{ node.name }}
+        {% endfor %}
+    workers:
+      vars:
+        ansible_python_interpreter: /usr/bin/python3
+        ansible_user: kube
+      hosts:
+        {% for node in kube_workers %}
+        {{ node.name_underscore }}:
+          ansible_host: {{ node.public_ip }}
+          internal_ip: {{ node.private_ip }}
+          # TODO not so good a variable name
+          name: {{ node.name }}
+        {% endfor %}

@@ -1,15 +1,4 @@
 ---
-- name: Copy certificates
-  copy:
-    src: "{{ work_dir }}/{{ item }}.pem"
-    dest: "~{{ ansible_user }}/"
-  loop:
-    - ca
-    - ca-key
-    - kubernetes
-    - kubernetes-key
-    - service-account
-    - service-account-key
 
 - name: Copy kube config files
   copy:
@@ -20,12 +9,8 @@
     - kube-controller-manager
     - kube-scheduler
 
-- name: Copy encryption config
-  template:
-    src: encryption-config.yaml
-    dest: "~{{ ansible_user }}/"
-  vars:
-    encryption_key: "{{ hostvars.localhost.encryption_key }}"
+# ETCD CONFIG
+# -----------
 
 - file:
     path: /tmp/etcd
@@ -42,7 +27,7 @@
     src: "/tmp/etcd/etcd-v{{ etcd_version }}-linux-amd64/{{ item }}"
     remote_src: yes
     dest: /usr/local/bin/
-    mode: 755
+    mode: 0755
     owner: root
   become: yes
   loop:
@@ -81,3 +66,55 @@
     daemon_reload: yes
   become: yes
 
+# INSTALL - CONFIGURE K8S
+# -----------------------
+
+- name: Create k8s config directory
+  file:
+    path: /etc/kubernetes/config
+    state: directory
+
+- name: Install controller binaries
+  get_url:
+    url: "https://storage.googleapis.com/kubernetes-release/release/v1.12.0/bin/linux/amd64/{{ item }}"
+    dest: /usr/local/bin/
+    mode: 0755
+  become: yes
+  loop:
+    - kube-apiserver
+    - kube-controller-manager
+    - kube-scheduler
+    - kubectl
+
+# K8S API SERVER CONFIG
+# ---------------------
+
+- name: Create k8s home
+  file:
+    path: "{{ k8s_home }}"
+    state: directory
+
+- name: Copy k8s certificates
+  copy:
+    src: "{{ work_dir }}/{{ item }}.pem"
+    dest: "{{ k8s_home }}/"
+  loop:
+    - ca
+    - ca-key
+    - kubernetes
+    - kubernetes-key
+    - service-account
+    - service-account-key
+
+- name: Copy k8s encryption config
+  template:
+    src: encryption-config.yaml
+    dest: "{{ k8s_home }}/"
+  vars:
+    encryption_key: "{{ hostvars.localhost.encryption_key }}"
+
+- name: Register internal IP
+  get_url:
+    url: http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/ip
+    headers:
+      Metadata-Flavor: Google

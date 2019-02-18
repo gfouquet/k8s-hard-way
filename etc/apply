@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+SCRIPT_DIR=$(cd $(dirname "$0"); pwd)
+#SCRIPT_DIR=$(dirname "${BASH_SOURCE[0]}")
+
+
+echo "Applying terraform"
+cd "${SCRIPT_DIR}/../environments/dev"
+terraform apply -auto-approve
+
+echo "Generating ansible inventory from terraform state"
+cd "${SCRIPT_DIR}"
+source ../venv/bin/activate
+python3  create-inventory.py
+deactivate
+
+"Running ansible playbook"
+cd "${SCRIPT_DIR}/../playbooks"
+ansible-playbook -i inventory config.yml --ask-become-pass

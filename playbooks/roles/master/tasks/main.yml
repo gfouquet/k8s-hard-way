@@ -126,3 +126,19 @@
     dest: /etc/systemd/systemd/system/kube-apiserver.service
   become: yes
 
+# K8S SCHEDULER
+# -------------
+
+- name: Install scheduler config files
+  copy:
+    src: "{{ work_dir }}/kube-scheduler.kubeconfig"
+    dest: "{{ k8s_home }}/"
+  become: yes
+
+- name: Install kube-scheduler systemd unit file
+  template:
+    src: kube-apiserver.service
+    dest: /etc/systemd/systemd/system/kube-scheduler.service
+  become: yes
+
+

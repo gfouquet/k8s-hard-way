@@ -141,4 +141,15 @@
     dest: /etc/systemd/systemd/system/kube-scheduler.service
   become: yes
 
+# Start k8s services
+# ------------------
+- systemd:
+    daemon_reload: yes
+    enable: yes
+    state: started
+    name: "{{ item }}"
+  become: yes
+  loop:
+    - kube-apiserver
+    - kube-scheduler
 

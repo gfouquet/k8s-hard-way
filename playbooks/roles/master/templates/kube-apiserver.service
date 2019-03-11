@@ -1,0 +1,40 @@
+[Unit]
+Description=Kubernetes API Server
+Documentation=https://github.com/kubernetes/kubernetes
+
+[Service]
+ExecStart=/usr/local/bin/kube-apiserver \\
+  --advertise-address={{ internal_ip }} \\
+  --allow-privileged=true \\
+  --apiserver-count=3 \\
+  --audit-log-maxage=30 \\
+  --audit-log-maxbackup=3 \\
+  --audit-log-maxsize=100 \\
+  --audit-log-path=/var/log/audit.log \\
+  --authorization-mode=Node,RBAC \\
+  --bind-address=0.0.0.0 \\
+  --client-ca-file={{ k8s_home }}/ca.pem \\
+  --enable-admission-plugins=Initializers,NamespaceLifecycle,NodeRestriction,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota \\
+  --enable-swagger-ui=true \\
+  --etcd-cafile={{ k8s_home }}/ca.pem \\
+  --etcd-certfile={{ k8s_home }}/kubernetes.pem \\
+  --etcd-keyfile={{ k8s_home }}/kubernetes-key.pem \\
+  --etcd-servers=https://10.240.0.10:2379,https://10.240.0.11:2379,https://10.240.0.12:2379 \\
+  --event-ttl=1h \\
+  --experimental-encryption-provider-config={{ k8s_home }}/encryption-config.yaml \\
+  --kubelet-certificate-authority={{ k8s_home }}/ca.pem \\
+  --kubelet-client-certificate={{ k8s_home }}/kubernetes.pem \\
+  --kubelet-client-key={{ k8s_home }}/kubernetes-key.pem \\
+  --kubelet-https=true \\
+  --runtime-config=api/all \\
+  --service-account-key-file={{ k8s_home }}/service-account.pem \\
+  --service-cluster-ip-range=10.32.0.0/24 \\
+  --service-node-port-range=30000-32767 \\
+  --tls-cert-file={{ k8s_home }}/kubernetes.pem \\
+  --tls-private-key-file={{ k8s_home }}/kubernetes-key.pem \\
+  --v=2
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

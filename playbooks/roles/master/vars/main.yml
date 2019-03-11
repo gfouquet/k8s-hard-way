@@ -1,2 +1,5 @@
 ---
+kubectl_version: "1.12.0"
+
 k8s_home: /var/lib/kubernetes/
+k8s_config_dir: /etc/kubernetes/config

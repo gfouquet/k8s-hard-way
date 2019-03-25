@@ -94,11 +94,13 @@
   file:
     path: "{{ k8s_home }}"
     state: directory
+  become: yes
 
 - name: Copy k8s certificates
   copy:
     src: "{{ work_dir }}/{{ item }}.pem"
     dest: "{{ k8s_home }}/"
+  become: yes
   loop:
     - ca
     - ca-key
@@ -111,6 +113,7 @@
   template:
     src: encryption-config.yaml
     dest: "{{ k8s_home }}/"
+  become: yes
   vars:
     encryption_key: "{{ hostvars.localhost.encryption_key }}"
 
@@ -123,7 +126,7 @@
 - name: Install kube-apiserver systemd unit file
   template:
     src: kube-apiserver.service
-    dest: /etc/systemd/systemd/system/kube-apiserver.service
+    dest: /etc/systemd/system/kube-apiserver.service
   become: yes
 
 # K8S SCHEDULER
@@ -138,14 +141,14 @@
 - name: Install kube-scheduler systemd unit file
   template:
     src: kube-apiserver.service
-    dest: /etc/systemd/systemd/system/kube-scheduler.service
+    dest: /etc/systemd/system/kube-scheduler.service
   become: yes
 
 # Start k8s services
 # ------------------
 - systemd:
     daemon_reload: yes
-    enable: yes
+    enabled: yes
     state: started
     name: "{{ item }}"
   become: yes

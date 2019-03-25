@@ -1,4 +1,6 @@
 ---
+- include_tasks: "{{ ansible_os_family }}.yml"
+
 - tempfile:
     state: directory
     prefix: ansible-tmp
@@ -124,6 +126,7 @@
             -profile=kubernetes \
             kubernetes-csr.json | cfssljson -bare kubernetes"
   args:
+    executable: /bin/bash
     chdir: "{{ tmp_path.path }}"
   tags:
     - api-server-cert

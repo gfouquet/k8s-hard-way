@@ -1,0 +1,20 @@
+---
+- get_url:
+    url: "{{ item.url }}"
+    dest: "/usr/local/bin/{{ item.name }}"
+    mode: 0755
+  become: yes
+  loop:
+    - url: "https://pkg.cfssl.org/R{{ cfssl_version }}/cfssl_linux-amd64"
+      name: cfssl
+    - url: "https://pkg.cfssl.org/R{{ cfssljson_version }}/cfssljson_linux-amd64"
+      name: cfssljson
+    - url: "https://storage.googleapis.com/kubernetes-release/release/v{{ kubectl_version }}/bin/linux/amd64/kubectl"
+      name: kubectl
+  tags:
+    - local-install
+
+- apt:
+    name: coreutils
+    state: present
+  become: yes

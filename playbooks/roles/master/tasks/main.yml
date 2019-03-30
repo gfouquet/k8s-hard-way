@@ -87,8 +87,8 @@
     - kube-scheduler
     - kubectl
 
-# K8S API SERVER CONFIG
-# ---------------------
+# K8S API SERVER / CONTROLLER MANAGER / SCHEDULER CONFIG
+# -----------------------------------------------------
 
 - name: Create k8s home
   file:
@@ -123,30 +123,33 @@
 #    headers:
 #      Metadata-Flavor: Google
 
-- name: Install kube-apiserver systemd unit file
+- name: Install k8s systemd unit files
   template:
-    src: kube-apiserver.service
-    dest: /etc/systemd/system/kube-apiserver.service
+    src: "{{ item }}"
+    dest: "/etc/systemd/system/{{ item }}"
   become: yes
+  loop:
+    - kube-apiserver.service
+    - kube-controller-manager.service
+    - kube-scheduler.service
 
-# K8S SCHEDULER
-# -------------
-
-- name: Install scheduler config files
+- name: Install k8S config files
   copy:
-    src: "{{ work_dir }}/kube-scheduler.kubeconfig"
+    src: "{{ work_dir }}/{{ item }}"
     dest: "{{ k8s_home }}/"
   become: yes
+  loop:
+    - kube-controller-manager.kubeconfig
+    - kube-scheduler.kubeconfig
 
-- name: Install kube-scheduler systemd unit file
+- name: Install KubeSchedulerConfig descriptor
   template:
-    src: kube-apiserver.service
-    dest: /etc/systemd/system/kube-scheduler.service
+    src: kube-scheduler.yaml
+    dest: "{{ k8s_config_dir }}/"
   become: yes
 
-# Start k8s services
-# ------------------
-- systemd:
+- name: Start k8s services
+  systemd:
     daemon_reload: yes
     enabled: yes
     state: started
@@ -155,4 +158,5 @@
   loop:
     - kube-apiserver
     - kube-scheduler
+    - kube-controller-manager
 

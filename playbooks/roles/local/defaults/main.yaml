@@ -1,0 +1,5 @@
+---
+reuse_certs: yes
+
+work_dir: /tmp/k8s-hard-way
+

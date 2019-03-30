@@ -1,29 +1,16 @@
 ---
 - include_tasks: "{{ ansible_os_family }}.yml"
 
-- tempfile:
+- name: Create local temp filder
+  file:
+    path: "{{ work_dir }}"
     state: directory
-    prefix: ansible-tmp
-  register: tmp_path
-  tags:
-    - ca-cert
-    - worker-cert
-    - client-certs
-    - api-server-cert
-
-- debug:
-    msg: "Temp folder : {{ tmp_path.path }}"
-  tags:
-    - ca-cert
-    - worker-cert
-    - client-certs
-    - api-server-cert
 
 # Create CA certificates
 # ---------------------
 - copy:
     src: "{{ item }}"
-    dest: "{{ tmp_path.path }}/{{ item }}"
+    dest: "{{ work_dir }}/{{ item }}"
   loop:
     - ca-config.json
     - ca-csr.json
@@ -35,7 +22,9 @@
 
 - shell: "cfssl gencert -initca ca-csr.json | cfssljson -bare ca"
   args:
-    chdir: "{{ tmp_path.path }}"
+    chdir: "{{ work_dir }}"
+  when:
+    - reuse_certs == False
   tags:
     - ca-cert
     - worker-cert
@@ -46,7 +35,7 @@
 # --------------------------
 - copy:
     src: "{{ csr_file }}"
-    dest: "{{ tmp_path.path }}/{{ csr_file }}"
+    dest: "{{ work_dir }}/{{ csr_file }}"
   vars:
     csr_file: "{{ item }}-csr.json"
   loop:
@@ -61,9 +50,11 @@
             -profile=kubernetes \
             {{ item }}-csr.json | cfssljson -bare {{ item }}"
   args:
-    chdir: "{{ tmp_path.path }}"
+    chdir: "{{ work_dir }}"
   loop:
     "{{ client_certs }}"
+  when:
+    - reuse_certs == False
   tags:
     - client-certs
 
@@ -71,7 +62,7 @@
 # ---------------------------
 - template:
     src: worker-csr.json
-    dest: "{{ tmp_path.path }}/{{ hostvars[item].name }}-csr.json"
+    dest: "{{ work_dir }}/{{ hostvars[item].name }}-csr.json"
   vars:
     worker_name: "{{ hostvars[item].name  }}"
   loop: "{{ groups.workers }}"
@@ -96,13 +87,15 @@
     -profile=kubernetes \
     {{ worker_name }}-csr.json | cfssljson -bare {{ worker_name }}"
   args:
-    chdir: "{{ tmp_path.path }}"
+    chdir: "{{ work_dir }}"
   vars:
     worker_name: "{{ hostvars[item].name  }}"
     worker_public_ip: "{{ hostvars[item].ansible_host }}"
     worker_internal_ip: "{{ hostvars[item].internal_ip }}"
   loop: "{{ groups.workers }}"
 #  loop: "{{ hostvars.localhost.groups.workers }}"
+  when:
+    - reuse_certs == False
   tags:
     - worker-cert
 
@@ -110,7 +103,7 @@
 # -----------------------------
 - copy:
     src: "{{ csr_file }}"
-    dest: "{{ tmp_path.path }}/{{ csr_file }}"
+    dest: "{{ work_dir }}/{{ csr_file }}"
   vars:
     csr_file: kubernetes-csr.json
   tags:
@@ -127,7 +120,9 @@
             kubernetes-csr.json | cfssljson -bare kubernetes"
   args:
     executable: /bin/bash
-    chdir: "{{ tmp_path.path }}"
+    chdir: "{{ work_dir }}"
+  when:
+    - reuse_certs == False
   tags:
     - api-server-cert
 
@@ -135,7 +130,7 @@
 # --------------------------
 - template:
     src: create-worker-config.sh
-    dest: "{{ tmp_path.path }}/"
+    dest: "{{ work_dir }}/"
     mode: "+x"
   tags:
     - kube-config
@@ -145,13 +140,15 @@
   loop: "{{ groups.workers }}"
 #  loop: "{{ hostvars.localhost.groups.workers }}"
   args:
-    chdir: "{{ tmp_path.path }}"
+    chdir: "{{ work_dir }}"
+  when:
+    - reuse_certs == False
   tags:
     - kube-config
 
 - template:
     src: "create-{{ item }}-config.sh"
-    dest: "{{ tmp_path.path }}/"
+    dest: "{{ work_dir }}/"
     mode: "+x"
   loop:
     - kube-proxy
@@ -165,18 +162,16 @@
 # ^^^ Nope - (some) certs which are embedded in config not available on nodes
 - shell: "./create-{{ item }}-config.sh"
   args:
-    chdir: "{{ tmp_path.path }}"
+    chdir: "{{ work_dir }}"
   loop:
     - kube-proxy
     - kube-controller-manager
     - kube-scheduler
     - admin
+  when:
+    - reuse_certs == False
   tags:
     - kube-config
-
-# Hackish - this fact will be used by other roles
-- set_fact:
-    work_dir: "{{ tmp_path.path }}"
 
 - name: Generate encryption key
   shell: "head -c 32 /dev/urandom | base64"

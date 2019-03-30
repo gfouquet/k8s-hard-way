@@ -8,8 +8,6 @@
   tasks:
     - import_role:
         name: worker
-      vars:
-        work_dir: "{{ hostvars.localhost.work_dir }}"
 
 - hosts: masters
   vars:
@@ -17,5 +15,3 @@
   tasks:
     - import_role:
         name: master
-      vars:
-        work_dir: "{{ hostvars.localhost.work_dir }}"

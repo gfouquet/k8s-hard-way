@@ -160,3 +160,21 @@
     - kube-scheduler
     - kube-controller-manager
 
+# ENABLE HTTP HEALTH CHECK
+# ------------------------
+- apt:
+    name: nginx
+    state: present
+  become: yes
+
+- copy:
+    src: kubernetes.default.svc.cluster.local
+    dest: /etc/nginx/sites-available/
+  become: yes
+
+- file:
+    src: /etc/nginx/sites-available/kubernetes.default.svc.cluster.local
+    dest: /etc/nginx/sites-enabled/
+    state: link
+  become: yes
+

@@ -174,7 +174,12 @@
 
 - file:
     src: /etc/nginx/sites-available/kubernetes.default.svc.cluster.local
-    dest: /etc/nginx/sites-enabled/
+    dest: /etc/nginx/sites-enabled/kubernetes.default.svc.cluster.local
     state: link
   become: yes
 
+- systemd:
+    name: nginx
+    enabled: yes
+    state: restarted
+  become: yes

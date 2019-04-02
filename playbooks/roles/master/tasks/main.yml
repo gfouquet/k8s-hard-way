@@ -183,3 +183,21 @@
     enabled: yes
     state: restarted
   become: yes
+
+# RBAC for Kubelet Authorization
+# ------------------------------
+- file:
+    path: /tmp/k8s
+    state: directory
+
+- copy:
+    src: "{{ item }}"
+    dest: "/tmp/k8s/{{ item }}"
+  loop:
+    - kube-apiserver-to-kubelet.clusterrole.yaml
+    - kube-apiserver.clusterrolebinding.yaml
+
+- command: "kubectl apply --kubeconfig admin.kubeconfig -f /tmp/k8s/{{ item }}"
+  loop:
+    - kube-apiserver-to-kubelet.clusterrole.yaml
+    - kube-apiserver.clusterrolebinding.yaml

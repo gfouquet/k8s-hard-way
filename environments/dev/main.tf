@@ -146,3 +146,40 @@ resource "google_compute_instance" "kube-worker" {
     sshKeys = "${var.ssh_user}:${file(var.ssh_public_key)}"
   }
 }
+
+# CONTROL PLANE
+# =============
+# K8s frontend load balancer
+# --------------------------
+resource "google_compute_http_health_check" "kube-health-check" {
+  name = "kubernetes"
+  host = "kubernetes.default.svc.cluster.local"
+  request_path = "/healthz"
+}
+
+resource "google_compute_firewall" "k8s-hard-way-allow-health-check" {
+  name = "k8s-hard-way-allow-health-check"
+  network = "${google_compute_network.k8s-hard-way-net.name}"
+  source_ranges = [ "209.85.152.0/22","209.85.204.0/22","35.191.0.0/16" ]
+  allow {
+    protocol = "tcp"
+  }
+}
+
+resource "google_compute_target_pool" "kube-target-pool" {
+  name = "kube-target-pool"
+  health_checks = [ "${google_compute_http_health_check.kube-health-check.name}" ]
+  instances = [
+    "${var.zone}/${google_compute_instance.kube-master.0.name}",
+    "${var.zone}/${google_compute_instance.kube-master.1.name}",
+    "${var.zone}/${google_compute_instance.kube-master.2.name}"
+  ]
+}
+
+resource "google_compute_forwarding_rule" "kube-forwarding-rule" {
+  name = "kube-forwarding-rule"
+  ip_address = "${google_compute_address.kube-public-ip.address}"
+  port_range = "6443"
+  region = "${var.region}"
+  target = "${google_compute_target_pool.kube-target-pool.self_link}"
+}

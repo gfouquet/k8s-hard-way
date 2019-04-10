@@ -10,6 +10,7 @@ output "kube_workers" {
     names = ["${google_compute_instance.kube-worker.*.name}"]
     public_ips = ["${google_compute_instance.kube-worker.*.network_interface.0.access_config.0.assigned_nat_ip}"]
     private_ips = ["${google_compute_instance.kube-worker.*.network_interface.0.network_ip}"]
+    pod_cidrs =  ["${google_compute_instance.kube-worker.*.metadata.pod-cidr}"]
   }
 }
 output "kube_public_ip" {

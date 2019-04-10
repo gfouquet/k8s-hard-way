@@ -97,3 +97,25 @@
     dest: /usr/local/bin/runsc
     mode: 0755
   become: yes
+
+
+# Configure CNI Networking
+# ------------------------
+
+- file:
+    path: "{{ item }}"
+    state: directory
+  become: yes
+  loop:
+    - /etc/cni
+    - /etc/cni/net.d
+
+- template:
+    src: 10-bridge.conf
+    dest: /etc/cni/net.d/
+  become: yes
+
+- copy:
+    src: 99-loopback.conf
+    dest: /etc/cni/net.d/
+  become: yes

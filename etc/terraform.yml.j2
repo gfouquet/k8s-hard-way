@@ -24,6 +24,7 @@ all:
         {{ node.name_underscore }}:
           ansible_host: {{ node.public_ip }}
           internal_ip: {{ node.private_ip }}
+          pod_cidr: {{ node.pod_cidr }}
           # TODO not so good a variable name
           name: {{ node.name }}
         {% endfor %}

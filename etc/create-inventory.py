@@ -28,6 +28,7 @@ kube_workers = [
         'name': name,
         'public_ip': workers['public_ips'][i],
         'private_ip': workers['private_ips'][i],
+        'pod_cidr': workers['pod_cidrs'][i],
         'name_underscore': name.replace('-', '_')
     }
     for i, name in enumerate(workers['names'])

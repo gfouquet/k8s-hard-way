@@ -15,4 +15,4 @@ deactivate
 
 "Running ansible playbook"
 cd "${SCRIPT_DIR}/../playbooks"
-ansible-playbook -i inventory config.yml --ask-become-pass
+ansible-playbook -i inventory config.yml --ask-become-pass --ask-pass

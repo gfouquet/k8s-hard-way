@@ -23,3 +23,77 @@
   copy:
     src: "{{ work_dir }}/kube-proxy.kubeconfig"
     dest: "~{{ ansible_user }}/"
+
+
+# Install the OS dependencies
+# ---------------------------
+- name: Install the OS dependencies
+  apt:
+    name: "{{ item }}"
+    state: present
+  become: yes
+  loop:
+    - socat
+    - conntrack
+    - ipset
+
+
+# Download and Install Worker Binaries
+# ------------------------------------
+
+- file:
+    path: "{{ item }}"
+    state: directory
+  become: yes
+  loop:
+    - /opt/cni
+    - /opt/cni/bin
+
+- name: Install worker binaries
+  get_url:
+    url: "https://storage.googleapis.com/kubernetes-release/release/v{{ kubectl_version }}/bin/linux/amd64/{{ item }}"
+    dest: /usr/local/bin/
+    mode: 0755
+  become: yes
+  loop:
+      - kube-proxy
+      - kubelet
+      - kubectl
+
+- name: Install crictl
+  unarchive:
+    src: "https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.12.0/crictl-v1.12.0-linux-amd64.tar.gz"
+    dest: /usr/local/bin/
+    remote_src: yes
+    mode: 0755
+  become: yes
+
+- name: Install cni plugins
+  unarchive:
+    src: "https://github.com/containernetworking/plugins/releases/download/v0.6.0/cni-plugins-amd64-v0.6.0.tgz"
+    dest: /opt/cni/bin/
+    remote_src: yes
+    mode: 0755
+  become: yes
+
+- name: Install containerd
+  unarchive:
+    src: "https://github.com/containerd/containerd/releases/download/v1.2.0-rc.0/containerd-1.2.0-rc.0.linux-amd64.tar.gz"
+    dest: /
+    remote_src: yes
+    mode: 0755
+  become: yes
+
+- name: Install runc
+  get_url:
+    url: "https://github.com/opencontainers/runc/releases/download/v1.0.0-rc5/runc.amd64"
+    dest: /usr/local/bin/runc
+    mode: 0755
+  become: yes
+
+- name: Install runc
+  get_url:
+    url: "https://storage.googleapis.com/kubernetes-the-hard-way/runsc-50c283b9f56bb7200938d9e207355f05f79f0d17"
+    dest: /usr/local/bin/runsc
+    mode: 0755
+  become: yes

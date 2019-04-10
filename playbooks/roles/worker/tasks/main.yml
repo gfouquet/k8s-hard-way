@@ -119,3 +119,22 @@
     src: 99-loopback.conf
     dest: /etc/cni/net.d/
   become: yes
+
+# Configure containerd
+# ---------------------
+
+- file:
+    path: /etc/containerd
+    state: directory
+  become: yes
+
+- copy:
+    scr: config.toml
+    dest: /etc/containerd/
+
+- name: Install containerd unit file
+  copy:
+    src: containerd.service
+    dest: /etc/systemd/system/
+  become: yes
+
